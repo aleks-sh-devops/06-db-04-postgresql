@@ -417,3 +417,24 @@ insert into orders_2 select * from orders whewe price <= 499;
 delete from orders where price <= 499;
 ```
 Да, можно.  
+
+## Задача 4
+
+Используя утилиту `pg_dump` создайте бекап БД `test_database`.
+
+Как бы вы доработали бэкап-файл, чтобы добавить уникальность значения столбца `title` для таблиц `test_database`?
+
+
+## Ответ  
+```
+root@b7d1ac37be2e:/var/lib/postgresql/data# pg_
+pg_archivecleanup  pg_buildext        pg_conftool        pg_ctl             pg_dump            pg_lsclusters      pg_recvlogical     pg_restore         pg_standby         pg_updatedicts     pg_verifybackup
+pg_backupcluster   pg_checksums       pg_controldata     pg_ctlcluster      pg_dumpall         pg_receivewal      pg_renamecluster   pg_restorecluster  pg_test_fsync      pg_upgrade         pg_virtualenv
+pg_basebackup      pg_config          pg_createcluster   pg_dropcluster     pg_isready         pg_receivexlog     pg_resetwal        pg_rewind          pg_test_timing     pg_upgradecluster  pg_waldump
+root@b7d1ac37be2e:/var/lib/postgresql/data# pg_dump -U pgusr -d test_database > test_database_dump.sql
+root@b7d1ac37be2e:/var/lib/postgresql/data# ls
+base    pg_commit_ts  pg_hba.conf    pg_logical    pg_notify    pg_serial     pg_stat      pg_subtrans  pg_twophase  pg_wal   postgresql.auto.conf  postmaster.opts  test_database_dump.sql
+global  pg_dynshmem   pg_ident.conf  pg_multixact  pg_replslot  pg_snapshots  pg_stat_tmp  pg_tblspc    PG_VERSION   pg_xact  postgresql.conf       postmaster.pid
+
+ CREATE TABLE orders (id integer NOT NULL, title character varying(80) NOT NULL UNIQUE, price integer DEFAULT 0);
+```

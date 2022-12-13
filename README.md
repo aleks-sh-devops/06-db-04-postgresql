@@ -13,7 +13,7 @@
 - вывода описания содержимого таблиц
 - выхода из psql
 
-## Ответ
+## Ответ  
 ```
 docker volume create vol_pg13 && \
 docker container run  \
@@ -298,6 +298,101 @@ pgusr=# \q
 root@b7d1ac37be2e:/#
 ```
 
+## Задача 2
 
+Используя `psql` создайте БД `test_database`.
 
+Изучите [бэкап БД](https://github.com/netology-code/virt-homeworks/tree/master/06-db-04-postgresql/test_data).
 
+Восстановите бэкап БД в `test_database`.
+
+Перейдите в управляющую консоль `psql` внутри контейнера.
+
+Подключитесь к восстановленной БД и проведите операцию ANALYZE для сбора статистики по таблице.
+
+Используя таблицу [pg_stats](https://postgrespro.ru/docs/postgresql/12/view-pg-stats), найдите столбец таблицы `orders` 
+с наибольшим средним значением размера элементов в байтах.
+
+**Приведите в ответе** команду, которую вы использовали для вычисления и полученный результат.
+
+## Ответ  
+```
+root@b7d1ac37be2e:/# psql -U pgusr
+psql (13.9 (Debian 13.9-1.pgdg110+1))
+Type "help" for help.
+
+pgusr=# CREATE DATABASE test_database;
+CREATE DATABASE
+pgusr=# \l
+                               List of databases
+     Name      | Owner | Encoding |  Collate   |   Ctype    | Access privileges
+---------------+-------+----------+------------+------------+-------------------
+ pgusr         | pgusr | UTF8     | en_US.utf8 | en_US.utf8 |
+ postgres      | pgusr | UTF8     | en_US.utf8 | en_US.utf8 |
+ template0     | pgusr | UTF8     | en_US.utf8 | en_US.utf8 | =c/pgusr         +
+               |       |          |            |            | pgusr=CTc/pgusr
+ template1     | pgusr | UTF8     | en_US.utf8 | en_US.utf8 | =c/pgusr         +
+               |       |          |            |            | pgusr=CTc/pgusr
+ test_database | pgusr | UTF8     | en_US.utf8 | en_US.utf8 |
+(5 rows)
+```
+Копируем backup в контейнер:
+```
+docker cp ~/netology/virt-homeworks/06-db-04-postgresql/test_data/test_dump.sql pg13_devops:/tmp
+docker exec -it pg13_devops bash
+root@b7d1ac37be2e:/# cd /var/lib/postgresql/data/
+root@b7d1ac37be2e:/var/lib/postgresql/data# psql -U pgusr -f /tmp/test_dump.sql test_database
+SET
+SET
+SET
+SET
+SET
+ set_config
+------------
+
+(1 row)
+
+SET
+SET
+SET
+SET
+SET
+SET
+CREATE TABLE
+psql:/tmp/test_dump.sql:34: ERROR:  role "postgres" does not exist
+CREATE SEQUENCE
+psql:/tmp/test_dump.sql:49: ERROR:  role "postgres" does not exist
+ALTER SEQUENCE
+ALTER TABLE
+COPY 8
+ setval
+--------
+      8
+(1 row)
+
+ALTER TABLE
+root@b7d1ac37be2e:/var/lib/postgresql/data# psql -U pgusr
+psql (13.9 (Debian 13.9-1.pgdg110+1))
+Type "help" for help.
+
+pgusr=# \c test_database
+You are now connected to database "test_database" as user "pgusr".
+test_database=# \dt
+        List of relations
+ Schema |  Name  | Type  | Owner
+--------+--------+-------+-------
+ public | orders | table | pgusr
+(1 row)
+
+test_database=# ANALYZE VERBOSE public.orders;
+INFO:  analyzing "public.orders"
+INFO:  "orders": scanned 1 of 1 pages, containing 8 live rows and 0 dead rows; 8 rows in sample, 8 estimated total rows
+ANALYZE
+test_database=# select avg_width from pg_stats where tablename='orders';
+ avg_width
+-----------
+         4
+        16
+         4
+(3 rows)
+```

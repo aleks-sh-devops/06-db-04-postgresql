@@ -396,3 +396,24 @@ test_database=# select avg_width from pg_stats where tablename='orders';
          4
 (3 rows)
 ```
+
+## Задача 3
+
+Архитектор и администратор БД выяснили, что ваша таблица orders разрослась до невиданных размеров и
+поиск по ней занимает долгое время. Вам, как успешному выпускнику курсов DevOps в нетологии предложили
+провести разбиение таблицы на 2 (шардировать на orders_1 - price>499 и orders_2 - price<=499).
+
+Предложите SQL-транзакцию для проведения данной операции.
+
+Можно ли было изначально исключить "ручное" разбиение при проектировании таблицы orders?
+
+## Ответ  
+```
+create table orders_1 (like orders);
+create table orders_2 (like orders);
+insert into orders_1 SELECT * from orders where price > 499;
+delete from orders where price > 499;
+insert into orders_2 select * from orders whewe price <= 499;
+delete from orders where price <= 499;
+```
+Да, можно.  
